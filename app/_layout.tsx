@@ -1,18 +1,42 @@
+import IntroScreen from "@/components/auth/IntroScreen";
+import { useAuth } from "@/ctx/AuthContext";
+import AuthProvider from "@/providers/AuthProvider";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
-
-import { useFonts } from "expo-font";
 
 export const unstable_settings = {
   anchor: "(tabs)",
 };
 
-export default function RootLayout() {
+function RootLayoutNav() {
+  const { session, loading, profile } = useAuth();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+
+  if (!loading || loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="white" />
+      </View>
+    );
+  }
+
+  if (!session) {
+    return (
+      <ThemeProvider value={DefaultTheme}>
+        <GestureHandlerRootView style={styles.loadingContainer}>
+          <IntroScreen />
+        </GestureHandlerRootView>
+      </ThemeProvider>
+    );
+  }
+  console.log(session);
 
   return (
     <ThemeProvider value={DefaultTheme}>
@@ -27,3 +51,23 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutNav />
+    </AuthProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+});
