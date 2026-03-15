@@ -1,109 +1,17 @@
 import { Colors } from "@/constants/theme";
-import { useVideoPlayer, VideoView } from "expo-video";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from "react-native-reanimated";
-
 import { verticalScale } from "react-native-size-matters";
 
-const { height, width } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 const MENU_HEIGHT = 250;
 const PEEK_MENU_HEIGHT = 50;
 const CLOSED_POSITION = MENU_HEIGHT - PEEK_MENU_HEIGHT;
 
-const videoSource = require("../../assets/videos/broll.mp4");
-
 const IntroScreen = () => {
-  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const mainTextOpacity = useSharedValue(0);
-  const scriptTextOpacity = useSharedValue(0);
-
-  const mainTextWords: string[] = ["Learn", "Mandarin", "the", "right", "way"];
-  const scriptPhrases: string[] = [
-    "Speaking",
-    "Listening",
-    "Practising",
-    "Conversing",
-  ];
-
-  const player = useVideoPlayer(videoSource, (player) => {
-    player.loop = true;
-    player.muted = true;
-    player.play();
-  });
-
-  const mainTextAnimatedStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      mainTextOpacity.value,
-      [0, 1],
-      [30, 0],
-      Extrapolation.CLAMP
-    );
-    return {
-      opacity: mainTextOpacity.value,
-      transform: [{ translateY }],
-    };
-  });
-  const scriptTextAnimatedStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scriptTextOpacity.value,
-      [0, 1],
-      [20, 0],
-      Extrapolation.CLAMP
-    );
-    return {
-      opacity: scriptTextOpacity.value,
-      transform: [{ translateY }],
-    };
-  });
-
-  const animateTextIn = () => {
-    mainTextOpacity.value = withTiming(1, { duration: 1200 });
-    scriptTextOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
-  };
-
-  useEffect(() => {
-    player.play();
-
-    const timeout = setTimeout(() => {
-      animateTextIn();
-    }, 300);
-  }, []);
-
   return (
-    <View style={{ flex: 1, backgroundColor: "black" }}>
-      <VideoView
-        nativeControls={false}
-        player={player}
-        style={[StyleSheet.absoluteFill, { width, height }]}
-        contentFit="cover"
-      />
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: "rgba(0, 0, 0, 0.4)", zIndex: 20 },
-        ]}
-      />
-      <View style={styles.heroTextContainer}>
-        <Animated.View
-          style={[styles.mainTextContainer, mainTextAnimatedStyle]}
-        >
-          <Text style={styles.heroTextMain}>{mainTextWords.join(" ")}</Text>
-        </Animated.View>
-
-        <Animated.View style={scriptTextAnimatedStyle}>
-          <Text style={styles.heroTextScript}>
-            {scriptPhrases[currentPhraseIndex]}
-          </Text>
-        </Animated.View>
-      </View>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ color: "white", fontSize: 20 }}>Intro Screen</Text>
     </View>
   );
 };
