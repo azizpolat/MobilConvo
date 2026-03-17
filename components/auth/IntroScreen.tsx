@@ -1,4 +1,8 @@
 import { Colors } from "@/constants/theme";
+import {
+  EBGaramond_500Medium_Italic,
+  useFonts,
+} from "@expo-google-fonts/eb-garamond";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useEffect, useState } from "react";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
@@ -10,7 +14,6 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-
 import { verticalScale } from "react-native-size-matters";
 
 const { height, width } = Dimensions.get("window");
@@ -25,7 +28,13 @@ const IntroScreen = () => {
   const mainTextOpacity = useSharedValue(0);
   const scriptTextOpacity = useSharedValue(0);
 
-  const mainTextWords: string[] = ["Learn", "Mandarin", "the", "right", "way"];
+  const manuTranslateY = useSharedValue(CLOSED_POSITION);
+
+  const [fontsLoaded] = useFonts({
+    EBGaramond_500Medium_Italic,
+  });
+
+  const mainTextWords: string[] = ["Learn", "Mandarin", "The", "Right", "Way"];
   const scriptPhrases: string[] = [
     "Speaking",
     "Listening",
@@ -64,9 +73,23 @@ const IntroScreen = () => {
     };
   });
 
+  const menuAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: manuTranslateY.value }],
+    };
+  });
+
   const animateTextIn = () => {
     mainTextOpacity.value = withTiming(1, { duration: 1200 });
     scriptTextOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
+  };
+
+  const animateScriptOut = () => {
+    scriptTextOpacity.value = withTiming(0, { duration: 500 });
+  };
+
+  const animateScriptIn = () => {
+    scriptTextOpacity.value = withTiming(1, { duration: 600 });
   };
 
   useEffect(() => {
@@ -75,7 +98,40 @@ const IntroScreen = () => {
     const timeout = setTimeout(() => {
       animateTextIn();
     }, 300);
+
+    const cycleInterval = setInterval(() => {
+      animateScriptOut();
+      setTimeout(() => {
+        setCurrentPhraseIndex((prev) => {
+          const nextIndex = (prev + 1) % scriptPhrases.length;
+
+          if (nextIndex === 0) {
+            setTimeout(() => animateScriptIn(), 150);
+          }
+          return nextIndex;
+        });
+      }, 500);
+    }, 3500);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(cycleInterval);
+    };
   }, []);
+
+  useEffect(() => {
+    if (currentPhraseIndex > 0) {
+      const timeout = setTimeout(() => {
+        animateScriptIn();
+      }, 150);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [currentPhraseIndex]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
@@ -104,6 +160,9 @@ const IntroScreen = () => {
           </Text>
         </Animated.View>
       </View>
+      <Animated.View
+        style={[styles.menuContainer, menuAnimatedStyle]}
+      ></Animated.View>
     </View>
   );
 };
